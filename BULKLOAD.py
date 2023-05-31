@@ -30,6 +30,7 @@ def processArchive():
   all_filesSI.sort(key=lambda x: os.path.getmtime(x), reverse=True)
   list_text = []
   filtroValue = []
+  oneVex = True
   for filename in all_filesSI:
     fname = filename[len(pathImportSI)+1:-20]
     if fname == 'SITE_LIST': #Need to save MobileSite last
@@ -38,27 +39,19 @@ def processArchive():
       ID_LIST = change_columnsName(ID_LIST)
       filtroValue = ID_LIST['LOCATION_ID_LIST'].tolist()
       print(fname,' Done!')
-
-  for filename in all_filesSI:
-    fname = filename[len(pathImportSI)+1:-20]
-    if fname == 'BULKLOAD_MOBILESITE': #Need to save MobileSite last
-      MBS = BULKLOAD_MOBILESITE.processArchive(filename,'LOCATION',filtroValue,OP)
-      MBS.name = 'MBS'
-      MBS = change_columnsName(MBS)
-      list_text = MBS['Mobile Site Name_MBS'].tolist()
-      print(fname,' Done!')
-
-
-  for filename in all_filesSI:
-    fname = filename[len(pathImportSI)+1:-20] 
-    if fname == 'BULKLOAD_CELLSECTOR':
-      CELLSEC = BULKLOAD_CELLSECTOR.processArchive(filename,'MS_NAME',list_text,OP) #Need to save MobileSite last
-      CELLSEC.name = 'CELLSEC'
-      CELLSEC = change_columnsName(CELLSEC)
-      print(fname,' Done!')
-
-
-    '''
+  
+  
+  #CellMobile(all_filesSI,pathImportSI,filtroValue)
+    for filename in all_filesSI:
+      fname = filename[len(pathImportSI)+1:-20]
+      if fname == 'BULKLOAD_MOBILESITE' and oneVex: #Need to save MobileSite last
+        MBS = BULKLOAD_MOBILESITE.processArchive(filename,'LOCATION',filtroValue,OP)
+        MBS.name = 'MBS'
+        MBS = change_columnsName(MBS)
+        list_text = MBS['Mobile Site Name_MBS'].tolist()
+        print(fname,' Done!')
+        oneVex = False
+  
     if fname == 'BULKLOAD_ANTENNA_PORT':
       ATP = BULKLOAD_ANTENNA_PORT.processArchive(filename,'ANTENNA_NAME',filtroValue,OP)
       ATP.name = 'ATP'
@@ -99,8 +92,8 @@ def processArchive():
       REPORT_SI.name = 'REPORT_SI'
       REPORT_SI = change_columnsName(REPORT_SI)
       print(fname,' Done!')
-    '''
-
+  
+    
   
   
   frameSI = pd.merge(CELLSEC,SIP, how='outer',left_on=['SI Port Name_CELLSEC'],right_on=['SI_PORT_NAME_SIP'])
@@ -137,4 +130,26 @@ def processArchive():
 def change_columnsName(df):
   for i in df.columns:
       df.rename(columns={i:i + '_' + df.name},inplace=True)
-  return df                
+  return df  
+
+
+
+
+def CellMobile(all_filesSI,pathImportSI,filtroValue):
+  for filename in all_filesSI:
+    fname = filename[len(pathImportSI)+1:-20]
+    if fname == 'BULKLOAD_MOBILESITE': #Need to save MobileSite last
+      MBS = BULKLOAD_MOBILESITE.processArchive(filename,'LOCATION',filtroValue,OP)
+      MBS.name = 'MBS'
+      MBS = change_columnsName(MBS)
+      list_text = MBS['Mobile Site Name_MBS'].tolist()
+      print(fname,' Done!')
+
+
+  for filename in all_filesSI:
+    fname = filename[len(pathImportSI)+1:-20] 
+    if fname == 'BULKLOAD_CELLSECTOR':
+      CELLSEC = BULKLOAD_CELLSECTOR.processArchive(filename,'MS_NAME',list_text,OP) #Need to save MobileSite last
+      CELLSEC.name = 'CELLSEC'
+      CELLSEC = change_columnsName(CELLSEC)
+      print(fname,' Done!')
